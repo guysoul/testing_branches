@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harry Potter Ansatte</title>
+  </head>
+  <body>
+    <h1>Harry Potter Ansatte</h1>
+    <input type="text" placeholder="Navn på ny lærer..." id="new-staff-txt" />
+    <input type="button" value="Legg til lærer!" id="add-btn" />
+    <div class="staff-container"></div>
+
+    <script>
+      const staffContainer = document.querySelector(".staff-container");
+      const newStaffTxt = document.querySelector("#new-staff-txt");
+      const addBtn = document.getElementById("add-btn");
+
+      let hogwartsStaff;
+
+      //Read
+      async function fetchStaff() {
+        const hogwartsStaffRequest = await fetch(
+          "https://hp-api.onrender.com/api/characters/staff"
+        );
+        let result = await hogwartsStaffRequest.json();
+
+        return result;
+      }
+
+      async function fetchAndShowStaff() {
+        try {
+          hogwartsStaff = await fetchStaff();
+          showAllStaff();
+        } catch {
+          console.error("Oops, klarte ikke laste ned Hogwarts Staff", error);
+        }
+      }
+
+      fetchAndShowStaff();
+
+      //Read for å vise frem alle ansatte
+      function showAllStaff() {
+        staffContainer.innerHTML = "";
+
+        hogwartsStaff.forEach((staffMember, index) => {
+          const staffCard = document.createElement("div");
+
+          //Slette
+          const deleteBtn = document.createElement("button");
+          deleteBtn.innerHTML = "Slett ansatt";
+          deleteBtn.style.backgroundColor = "red";
+          deleteBtn.addEventListener("click", function () {
+            deleteStaffMember(index);
+          });
+
+          //Rediger-Edit
+          const nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.placeholder = "Skriv inn navn på ansatt...";
+          nameInput.id = `nameInput-${index}`;
+
+          const editBtn = document.createElement("button");
+          editBtn.innerHTML = "Redigere ansatt";
+          editBtn.addEventListener("click", function () {
+            editStaffMember(index);
+          });
+
+          staffCard.innerHTML = `<img src="${staffMember.image}" style="width: 100px" /> <h3>${staffMember.name}</h3>`;
+          console.log(staffMember.name);
+          staffCard.append(deleteBtn, nameInput, editBtn);
+          staffContainer.append(staffCard);
+        });
+      }
+
+      function deleteStaffMember(TELLER) {
+        hogwartsStaff.splice(TELLER, 1);
+        showAllStaff();
+      }
+
+      //Create
+      function addStaffMember() {
+        hogwartsStaff.unshift({
+          name: newStaffTxt.value,
+        });
+        console.log(hogwartsStaff);
+        showAllStaff();
+      }
+
+      addBtn.onclick = addStaffMember;
+
+      //Edit
+      function editStaffMember(index) {
+        const newStaffName = document.getElementById(
+          `nameInput-${index}`
+        ).value;
+
+        hogwartsStaff[index].name = newStaffName;
+
+        showAllStaff();
+      }
+    </script>
+  </body>
+</html>
